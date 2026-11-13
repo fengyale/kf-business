@@ -1,88 +1,96 @@
-<div align="center">
+# 示例铸造材料有限公司官网（静态单页）
 
-# kf-business
+一个响应式企业官网静态单页示例，包含产品展示、滚动动效与静态部署配置。
 
-单页企业官网静态站点模板，面向制造业 / 材料行业。
+> **声明**：仓库中的公司名称、地址、电话、邮箱等均为示例值，不含任何真实企业信息，仅用于演示静态站点结构、响应式布局与页面动效。
 
-![HTML5](https://img.shields.io/badge/HTML5-E34F26?logo=html5&logoColor=white)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-06B6D4?logo=tailwindcss&logoColor=white)
-![GSAP](https://img.shields.io/badge/GSAP-88CE02?logo=greensock&logoColor=white)
-![License](https://img.shields.io/badge/License-MIT-yellow)
+## 页面结构
 
-</div>
+`index.html` 是唯一页面，顶部导航包含 5 个锚点，正文共 7 个 `<section>`：
 
-## 项目定位
+| 顺序 | 区块 | 锚点 | 主要内容 |
+| --- | --- | --- | --- |
+| 1 | 首屏 | `#home` | 主标题、行动按钮、Three.js 粒子背景 canvas、向下滚动提示 |
+| 2 | 我们的产品优势 | 无 | 3 张优势卡片（高温稳定性、化学成分、质量管控等） |
+| 3 | 产品中心 | `#products` | 4 个分类筛选项（铝矾土 / 莫来石粉 / 铸造涂料 / 耐火材料），5 张产品卡片 |
+| 4 | 成功案例 | 无 | 钢铁、电力、汽车制造 3 个行业案例卡片 |
+| 5 | AI 应用方案 | `#ai-tool` | 工艺/材料/温度等表单，提交后由前端规则匹配输出推荐结果 |
+| 6 | 关于我们 | `#about` | 公司简介、资质标签、6 张厂区实景图 |
+| 7 | 联系我们 | `#contact` | 留言表单（纯前端，无提交接口）与地址、电话、邮箱、工作时间 |
+| — | 页脚 | — | 产品/快速链接、社交图标、版权信息 |
 
-一套可直接改内容上线单页企业官网模板：全部区块、样式与动效都写在 `index.html` 内，无构建步骤、无后端依赖、无 CDN 依赖，把 `assets/` 和 `index.html` 传到任何静态托管或 IIS 即可访问。
-
-适合用作制造业、铸造 / 材料行业的官网起步模板：保留结构与动效，替换公司信息、产品图片和文案即可成站。
+页面还包含移动端折叠菜单、返回顶部按钮、图片懒加载（`data-src` + `IntersectionObserver`）、产品分类筛选，以及键盘输入 Konami 码触发的烟花彩蛋。
 
 ## 技术栈
 
-| 技术 | 用途 |
-| --- | --- |
-| HTML5 + 原生 JavaScript | 页面结构、交互逻辑（导航、移动端菜单、表单校验、返回顶部） |
-| Tailwind CSS（本地构建产物） | 全站样式，`assets/css/tailwind.min.css` 已内置，不依赖 CDN |
-| Font Awesome（本地字体） | 图标，字体文件在 `assets/fonts/` |
-| GSAP + ScrollTrigger | 滚动进场、区块渐显等动效 |
-| three.js | Hero 区 `#hero-canvas` 的粒子背景 |
-| Noto Sans SC（本地 woff2） | 中文字体，避免外部字体请求 |
-
-## 页面区块
-
-| 区块 | 锚点 | 说明 |
+| 资源 | 版本 | 用途 |
 | --- | --- | --- |
-| 导航 | — | 桌面端吸顶导航 + 移动端汉堡菜单（`#mobile-menu`） |
-| Hero | `#home` | 主标题、行动按钮、three.js 粒子画布 |
-| 产品优势 | — | 卡片式罗列核心卖点 |
-| 产品中心 | `#products` | 产品网格，图片与名称由 `#products-container` 渲染 |
-| 成功案例 | — | 按行业（汽车 / 电力 / 钢铁）展示应用场景 |
-| AI 产品应用场景分析器 | `#ai-tool` | 纯前端演示表单（工艺类型、材质、温度）→ 本地规则输出推荐结果，不发请求、不接后端 |
-| 关于我们 | `#about` | 公司介绍、车间与产线图片 |
-| 联系我们 | `#contact` | 联系方式 + 留言表单（前端校验，无提交接口） |
+| Tailwind CSS | 3.4.1 | 本地构建版样式，负责布局、响应式与工具类（无 CDN 依赖） |
+| Font Awesome Free | 6.4.0 | 页面图标（`fas` / `fab`），含本地 woff2 字体 |
+| Three.js | r128 | 首屏 `#hero-canvas` 粒子背景 |
+| GSAP | 3.11.4 | 粒子旋转、彩蛋烟花等 JavaScript 动画 |
+| GSAP ScrollTrigger | 3.11.4 | 已引入，但当前脚本未调用；滚动进场动画实际由 `IntersectionObserver` + CSS 实现 |
+| Noto Sans SC | — | 本地 `@font-face` 字体，woff2 文件目前为占位内容 |
 
-全站响应式，按 `md` 断点切换移动端 / 桌面端布局。
+项目为纯静态实现，无构建工具、无 npm 依赖、无后端服务；AI 分析器仅为前端写死的规则匹配演示，不调用任何模型 API。
+
+## 本地预览
+
+方式一：直接双击 `index.html`，用浏览器打开。
+
+方式二：启动本地静态服务器（便于验证相对路径与懒加载）：
+
+```powershell
+cd D:\workspace\zhengzhou-yijinjing
+python -m http.server 8080
+```
+
+然后访问 <http://localhost:8080>。
 
 ## 目录结构
 
 ```text
-.
-├── index.html               # 单页站点全部结构、样式与脚本
-├── web.config               # IIS 静态缓存与 rewrite 配置
-└── assets
-    ├── css
-    │   ├── tailwind.min.css     # Tailwind 构建产物
-    │   ├── font-awesome.min.css # 图标样式
-    │   └── noto-sans-sc.css     # 字体声明
-    ├── fonts                  # Font Awesome / Noto Sans SC woff2
-    ├── images                 # 产品图、案例图、车间图、Logo
-    └── js                     # gsap.min.js、ScrollTrigger.min.js、three.min.js
+zhengzhou-yijinjing/
+├── index.html                  # 单页站点全部结构、样式与脚本
+├── web.config                  # IIS 静态站点缓存配置
+├── .gitignore
+└── assets/
+    ├── css/
+    │   ├── tailwind.min.css    # Tailwind CSS 3.4.1
+    │   └── font-awesome.min.css
+    ├── fonts/                  # Font Awesome 与 Noto Sans SC 字体
+    ├── js/
+    │   ├── three.min.js        # Three.js r128
+    │   ├── gsap.min.js         # GSAP 3.11.4
+    │   └── ScrollTrigger.min.js
+    └── images/
+        ├── about/              # 厂区、设备、办公场景图
+        ├── cases/              # 行业案例图
+        ├── products/           # 产品图（含同名 SVG 占位图）
+        ├── ai-analysis.jpg
+        ├── company-logo.svg
+        ├── company-logo-light.svg
+        └── endjpg.png          # 首屏背景图
 ```
 
-## 本地预览
+## 部署说明
 
-方式一，直接双击 `index.html` 用浏览器打开（站点未使用模块化脚本，可正常运行）。
+`web.config` 面向 IIS 静态站点，包含两项配置：
 
-方式二，起一个本地静态服务器，更贴近线上环境：
+- `staticContent/clientCache`：使用 `UseMaxAge`，默认缓存 30 天。
+- `rewrite/outboundRules`：为 `css/js/woff2/jpg/jpeg/png/gif/svg` 响应追加 `Cache-Control: public, max-age=2592000`（30 天）。
+- 未配置 URL 重写或跳转规则，不依赖伪静态。
 
-```bash
-python -m http.server 8080
-# 浏览器访问 http://localhost:8080
-```
+将整个目录上传到 IIS 站点根目录即可（`index.html` 作为默认文档）。其它静态托管方式：
 
-## 部署（IIS）
+- GitHub Pages / Netlify / Vercel：直接发布仓库根目录，`web.config` 不会生效，需在平台侧配置缓存头。
+- Nginx：将根目录指向站点路径，缓存策略需在 `nginx.conf` 中另行配置。
 
-`web.config` 提供两项配置，部署在 IIS 时自动生效：
+## 自定义说明
 
-- `staticContent/clientCache`：静态资源统一缓存 30 天
-- `rewrite/outboundRules`：为 `.css` / `.js` / `.woff2` / `.jpg` / `.jpeg` / `.png` / `.gif` / `.svg` 的响应补充 `Cache-Control: public, max-age=2592000`
-
-使用时把仓库根目录作为站点物理路径，确保 `web.config` 与 `index.html` 同级。部署到 Nginx / 对象存储等其它静态托管时，`web.config` 会被忽略，缓存策略需在对应平台单独配置。
-
-## 关于示例数据
-
-> 仓库为脱敏示例版本，站点内的公司名称（示例铸造材料有限公司）、地址（河南省郑州市示例产业园 12 号楼）、电话（+86 000-0000 0000）、邮箱（info@example-casting.com）均为示例值，表单也不含任何后端提交接口。正式使用前请全文替换为真实信息，并自行接入表单收集方案。
-
-## License
-
-MIT
+- **产品数据**：产品卡片直接写在 `index.html` 的 `#products-container` 中，修改卡片标题、描述、标签和图片即可；`data-category` 需与分类按钮的 `bauxite` / `mullite` / `coating` / `refractory` 对应。
+- **图片替换**：产品图放在 `assets/images/products/`，案例图放在 `assets/images/cases/`，厂区图放在 `assets/images/about/`；`<img>` 使用 `data-src` 懒加载，替换时同步修改路径。
+- **联系方式**：全局搜索 `示例铸造材料有限公司`、`河南省郑州市示例产业园 12 号楼`、`+86 000-0000 0000`、`info@example-casting.com`，同时更新 `<title>`、导航 logo 与页脚。
+- **AI 分析结果**：`#ai-tool` 的推荐内容由脚本内写死的 `recommendations` / `advantages` 数组生成，可直接替换文案与图片路径。
+- **字体**：`assets/fonts/NotoSansSC-*.woff2` 当前为 27 字节占位文件，正式使用前需替换为真实字体文件。
+- **留言表单**：`#contact` 表单没有 `action` 与提交处理逻辑，需自行接入后端接口或第三方表单服务。
