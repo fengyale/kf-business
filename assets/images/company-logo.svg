@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <!-- 六边形外框：象征耐火/铸造工业 -->
+  <path d="M32 5 L55.38 18.5 L55.38 45.5 L32 59 L8.62 45.5 L8.62 18.5 Z"
+        stroke="#0B3C5D" stroke-width="3" stroke-linejoin="round"/>
+  <!-- 堆叠铝锭：底部两块 -->
+  <path d="M19 38 L29.5 38 L31 46 L17.5 46 Z" fill="#0B3C5D"/>
+  <path d="M34.5 38 L45 38 L46.5 46 L33 46 Z" fill="#0B3C5D"/>
+  <!-- 顶部一块：橙色高亮 -->
+  <path d="M26.5 29.5 L37.5 29.5 L39 38 L25 38 Z" fill="#FF8C42"/>
+</svg>

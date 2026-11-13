@@ -1,0 +1,7 @@
+<svg width="300" height="200" xmlns="http://www.w3.org/2000/svg">
+  <rect width="300" height="200" fill="#f0f0f0"/>
+  <rect x="50" y="50" width="200" height="100" fill="#e0e0e0" rx="5"/>
+  <circle cx="150" cy="100" r="30" fill="#DAA520"/>
+  <text x="150" y="170" text-anchor="middle" font-family="Arial" font-size="14" fill="#333">铝合金铸造专用涂料</text>
+  <text x="150" y="190" text-anchor="middle" font-family="Arial" font-size="10" fill="#666">特殊配方</text>
+</svg>

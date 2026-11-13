@@ -1,0 +1,2507 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>示例铸造材料有限公司 - 专业铸造材料供应商</title>
+    <!-- Tailwind CSS（本地构建，无 CDN 依赖） -->
+    <link rel="stylesheet" href="assets/css/tailwind.min.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="assets/css/font-awesome.min.css">
+    <!-- Three.js -->
+    <script src="assets/js/three.min.js"></script>
+    <!-- GSAP 动画库 -->
+    <script src="assets/js/gsap.min.js"></script>
+    <script src="assets/js/ScrollTrigger.min.js"></script>
+    <style>
+        @import url('assets/fonts/noto-sans-sc.css');
+
+        :root {
+            --primary-color: #0B3C5D;
+            --secondary-color: #FF8C42;
+            --light-gray: #F4F4F4;
+            --dark-gray: #333333;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            color: var(--dark-gray);
+            overflow-x: hidden;
+        }
+
+        .text-gradient {
+            background: linear-gradient(90deg, var(--primary-color), #1D7CAE);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .bg-gradient {
+            background: linear-gradient(135deg, var(--primary-color), #1D7CAE);
+        }
+
+        .hero-section {
+            position: relative;
+            height: 100vh;
+            overflow: hidden;
+            background: linear-gradient(135deg, rgba(11, 60, 93, 0.95) 0%, rgba(29, 124, 174, 0.95) 100%),
+                url('assets/images/endjpg.png');
+            background-size: cover;
+            background-position: center;
+            background-blend-mode: multiply;
+        }
+
+        #hero-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        .nav-link {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: var(--secondary-color);
+            transition: width 0.3s ease;
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        .product-card {
+            transition: all 0.3s ease;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .product-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .product-card img {
+            transition: transform 0.5s ease;
+        }
+
+        .product-card:hover img {
+            transform: scale(1.05);
+        }
+
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background-color: rgba(11, 60, 93, 0.1);
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover .feature-icon {
+            background-color: var(--primary-color);
+            color: white;
+            transform: rotateY(180deg);
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background-color: #0d4c74;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary-color);
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            background-color: #e67e3b;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .animate-fade-in {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+
+        .animate-fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* 响应式调整 */
+        @media (max-width: 768px) {
+            .hero-content h1 {
+                font-size: 2.5rem;
+            }
+
+            .mobile-menu {
+                display: none;
+            }
+
+            .mobile-menu.active {
+                display: flex;
+            }
+        }
+
+        /* 加载动画 */
+        .loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+
+        .loader.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .loader-circle {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(11, 60, 93, 0.1);
+            border-top-color: var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* AI工具样式 */
+        .ai-tool-container {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 16px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .ai-tool-container textarea {
+            resize: none;
+            border: 2px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+
+        .ai-tool-container textarea:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(11, 60, 93, 0.2);
+        }
+
+        /* 滚动指示器 */
+        .scroll-indicator {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            20%,
+            50%,
+            80%,
+            100% {
+                transform: translateY(0) translateX(-50%);
+            }
+
+            40% {
+                transform: translateY(-20px) translateX(-50%);
+            }
+
+            60% {
+                transform: translateY(-10px) translateX(-50%);
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50">
+    <!-- 加载动画 -->
+    <div class="loader">
+        <div class="loader-circle"></div>
+    </div>
+
+    <!-- 导航栏 -->
+    <nav class="bg-white shadow-md fixed w-full z-50">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center">
+                    <img src="assets/images/company-logo.svg" alt="示例铸造材料有限公司" class="h-12 mr-3">
+                    <div>
+                        <h1 class="text-xl font-bold text-gray-800">示例铸造材料有限公司</h1>
+                        <p class="text-xs text-gray-600">专业铸造材料供应商</p>
+                    </div>
+                </div>
+
+                <!-- 桌面导航 -->
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#home" class="nav-link text-gray-800 hover:text-blue-800 font-medium">首页</a>
+                    <a href="#products" class="nav-link text-gray-800 hover:text-blue-800 font-medium">产品中心</a>
+                    <a href="#ai-tool" class="nav-link text-gray-800 hover:text-blue-800 font-medium">AI应用方案</a>
+                    <a href="#about" class="nav-link text-gray-800 hover:text-blue-800 font-medium">关于我们</a>
+                    <a href="#contact" class="nav-link text-gray-800 hover:text-blue-800 font-medium">联系我们</a>
+                    <button
+                        class="bg-gradient text-white px-4 py-2 rounded-md hover:shadow-lg transition duration-300 flex items-center">
+                        <i class="fas fa-envelope mr-2"></i> 获取报价
+                    </button>
+                </div>
+
+                <!-- 移动端菜单按钮 -->
+                <div class="md:hidden">
+                    <button id="mobile-menu-button" class="text-gray-800 focus:outline-none">
+                        <i class="fas fa-bars text-2xl"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 移动端导航菜单 -->
+            <div id="mobile-menu" class="mobile-menu flex-col space-y-4 py-4 mt-2 hidden">
+                <a href="#home" class="text-gray-800 hover:text-blue-800 font-medium">首页</a>
+                <a href="#products" class="text-gray-800 hover:text-blue-800 font-medium">产品中心</a>
+                <a href="#ai-tool" class="text-gray-800 hover:text-blue-800 font-medium">AI应用方案</a>
+                <a href="#about" class="text-gray-800 hover:text-blue-800 font-medium">关于我们</a>
+                <a href="#contact" class="text-gray-800 hover:text-blue-800 font-medium">联系我们</a>
+                <button
+                    class="bg-gradient text-white px-4 py-2 rounded-md hover:shadow-lg transition duration-300 w-full flex items-center justify-center">
+                    <i class="fas fa-envelope mr-2"></i> 获取报价
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 英雄区域 -->
+    <section id="home" class="hero-section flex items-center justify-center">
+        <canvas id="hero-canvas"></canvas>
+        <div class="container mx-auto px-4 z-10">
+            <div class="hero-content text-center md:text-left md:max-w-3xl">
+                <h1 class="text-4xl md:text-6xl font-bold mb-6 text-white drop-shadow-lg">
+                    高品质铸造材料<br>
+                    <span class="text-secondary-color">引领行业新标准</span>
+                </h1>
+                <p class="text-xl md:text-2xl mb-8 text-white drop-shadow-md">
+                    专注于铝矾土、莫来石粉、铸造涂料等高性能铸造材料的研发与生产
+                </p>
+                <div
+                    class="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4 justify-center md:justify-start">
+                    <button class="btn-primary px-8 py-3 rounded-md text-lg font-medium">
+                        <i class="fas fa-search mr-2"></i> 探索产品
+                    </button>
+                    <button class="btn-secondary px-8 py-3 rounded-md text-lg font-medium">
+                        <i class="fas fa-headset mr-2"></i> 联系专家
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="scroll-indicator text-white">
+            <i class="fas fa-chevron-down text-2xl"></i>
+        </div>
+    </section>
+
+    <!-- 产品特点 -->
+    <section class="py-20 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">我们的产品优势</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">示例铸造材料有限公司致力于提供高品质的铸造材料，满足各类铸造工艺的需求</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div
+                    class="feature-card bg-white p-8 rounded-lg shadow-md text-center animate-fade-in hover:shadow-xl transition-all duration-500">
+                    <div class="feature-icon mx-auto">
+                        <i class="fas fa-fire-alt text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-4">高温稳定性</h3>
+                    <p class="text-gray-600">
+                        我们的铝矾土和莫来石粉产品具有优异的高温稳定性，能够在1700℃以上的高温环境下保持稳定性能，确保铸件质量。
+                    </p>
+                    <div class="mt-6">
+                        <div
+                            class="inline-block bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full font-semibold">
+                            耐火度 ≥ 1770℃
+                        </div>
+                    </div>
+                </div>
+
+                <div class="feature-card bg-white p-8 rounded-lg shadow-md text-center animate-fade-in hover:shadow-xl transition-all duration-500"
+                    style="transition-delay: 0.2s;">
+                    <div class="feature-icon mx-auto">
+                        <i class="fas fa-flask text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-4">精准化学成分</h3>
+                    <p class="text-gray-600">
+                        通过先进的生产工艺和严格的质量控制，确保产品化学成分精准稳定，Al₂O₃含量可达45%-85%，满足不同应用需求。
+                    </p>
+                    <div class="mt-6">
+                        <div
+                            class="inline-block bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full font-semibold mr-2 mb-2">
+                            Al₂O₃: 45%-85%
+                        </div>
+                        <div
+                            class="inline-block bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full font-semibold mb-2">
+                            SiO₂: ≥ 50%
+                        </div>
+                    </div>
+                </div>
+
+                <div class="feature-card bg-white p-8 rounded-lg shadow-md text-center animate-fade-in hover:shadow-xl transition-all duration-500"
+                    style="transition-delay: 0.4s;">
+                    <div class="feature-icon mx-auto">
+                        <i class="fas fa-cogs text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-4">定制化解决方案</h3>
+                    <p class="text-gray-600">
+                        根据客户的具体需求，提供个性化的产品配方和应用方案，优化铸造工艺，提高生产效率和铸件质量。
+                    </p>
+                    <div class="mt-6">
+                        <div
+                            class="inline-block bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full font-semibold">
+                            专业技术团队
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 新增的产品特点 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
+                <div class="bg-white p-6 rounded-lg shadow-md animate-fade-in hover:scale-105 transition-all duration-300"
+                    style="transition-delay: 0.1s;">
+                    <div class="flex items-center mb-4">
+                        <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                            <i class="fas fa-leaf text-blue-800"></i>
+                        </div>
+                        <h4 class="font-bold">环保材料</h4>
+                    </div>
+                    <p class="text-gray-600 text-sm">
+                        采用环保生产工艺，产品符合国家环保标准，无有害成分，可安全使用。
+                    </p>
+                </div>
+
+                <div class="bg-white p-6 rounded-lg shadow-md animate-fade-in hover:scale-105 transition-all duration-300"
+                    style="transition-delay: 0.2s;">
+                    <div class="flex items-center mb-4">
+                        <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                            <i class="fas fa-check-circle text-blue-800"></i>
+                        </div>
+                        <h4 class="font-bold">质量保证</h4>
+                    </div>
+                    <p class="text-gray-600 text-sm">
+                        严格的质量控制体系，产品通过ISO9001质量管理体系认证，确保产品质量稳定可靠。
+                    </p>
+                </div>
+
+                <div class="bg-white p-6 rounded-lg shadow-md animate-fade-in hover:scale-105 transition-all duration-300"
+                    style="transition-delay: 0.3s;">
+                    <div class="flex items-center mb-4">
+                        <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                            <i class="fas fa-truck text-blue-800"></i>
+                        </div>
+                        <h4 class="font-bold">快速交付</h4>
+                    </div>
+                    <p class="text-gray-600 text-sm">
+                        完善的物流体系，确保产品及时交付，支持全国配送，满足客户紧急需求。
+                    </p>
+                </div>
+
+                <div class="bg-white p-6 rounded-lg shadow-md animate-fade-in hover:scale-105 transition-all duration-300"
+                    style="transition-delay: 0.4s;">
+                    <div class="flex items-center mb-4">
+                        <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                            <i class="fas fa-headset text-blue-800"></i>
+                        </div>
+                        <h4 class="font-bold">技术支持</h4>
+                    </div>
+                    <p class="text-gray-600 text-sm">
+                        专业的技术团队提供全方位技术支持，解决客户在使用过程中遇到的问题。
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 产品中心 -->
+    <section id="products" class="py-20 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">产品中心</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">我们提供高品质的铝矾土、莫来石粉和铸造涂料等产品，满足各类铸造工艺的需求</p>
+            </div>
+
+            <!-- 产品分类标签 -->
+            <div class="flex flex-wrap justify-center gap-4 mb-12">
+                <button
+                    class="category-btn bg-blue-800 text-white px-6 py-2 rounded-full text-sm font-medium hover:bg-blue-700 transition duration-300"
+                    data-category="all">全部产品</button>
+                <button
+                    class="category-btn bg-white text-gray-800 px-6 py-2 rounded-full text-sm font-medium hover:bg-gray-100 transition duration-300"
+                    data-category="bauxite">铝矾土系列</button>
+                <button
+                    class="category-btn bg-white text-gray-800 px-6 py-2 rounded-full text-sm font-medium hover:bg-gray-100 transition duration-300"
+                    data-category="mullite">莫来石粉系列</button>
+                <button
+                    class="category-btn bg-white text-gray-800 px-6 py-2 rounded-full text-sm font-medium hover:bg-gray-100 transition duration-300"
+                    data-category="coating">铸造涂料系列</button>
+                <button
+                    class="category-btn bg-white text-gray-800 px-6 py-2 rounded-full text-sm font-medium hover:bg-gray-100 transition duration-300"
+                    data-category="refractory">耐火材料系列</button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8" id="products-container">
+                <!-- 铝矾土产品 -->
+                <div class="product-card bg-white animate-fade-in group" data-category="bauxite">
+                    <div class="relative overflow-hidden">
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='256' viewBox='0 0 400 256'%3E%3Crect width='400' height='256' fill='%23f0f0f0'/%3E%3C/svg%3E"
+                            data-src="assets/images/products/bauxite-sample.jpg" alt="铝矾土"
+                            class="w-full h-64 object-cover lazy">
+                        <div
+                            class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end">
+                            <div class="p-6 text-white">
+                                <h4 class="font-bold text-lg mb-2">产品特性</h4>
+                                <ul class="text-sm space-y-1">
+                                    <li class="flex items-center"><i
+                                            class="fas fa-check-circle mr-2 text-green-400"></i> 高纯度</li>
+                                    <li class="flex items-center"><i
+                                            class="fas fa-check-circle mr-2 text-green-400"></i> 耐高温</li>
+                                    <li class="flex items-center"><i
+                                            class="fas fa-check-circle mr-2 text-green-400"></i> 化学稳定性好</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="absolute top-4 right-4 bg-blue-800 text-white text-xs px-3 py-1 rounded-full">
+                            热销产品
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-2 group-hover:text-blue-800 transition-colors duration-300">铝矾土
+                        </h3>
+                        <p class="text-gray-600 mb-4">
+                            高纯度铝矾土，Al₂O₃含量45%-85%，具有优异的耐火性能和化学稳定性，广泛应用于铸造、耐火材料等领域。
+                        </p>
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            <span class="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full">铸造用</span>
+                            <span class="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full">耐火材料</span>
+                            <span class="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full">陶瓷原料</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-500">
+                                <i class="fas fa-certificate text-blue-600 mr-1"></i> ISO9001认证
+                            </span>
+                            <a href="#"
+                                class="text-blue-800 hover:text-blue-600 font-medium flex items-center group-hover:translate-x-1 transition-transform duration-300">
+                                查看详情 <i class="fas fa-arrow-right ml-2"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 莫来石粉产品 -->
+                <div class="product-card bg-white animate-fade-in group" style="transition-delay: 0.2s;"
+                    data-category="mullite">
+                    <div class="relative overflow-hidden">
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='256' viewBox='0 0 400 256'%3E%3Crect width='400' height='256' fill='%23f0f0f0'/%3E%3C/svg%3E"
+                            data-src="assets/images/products/mullite-powder-sample.jpg" alt="莫来石粉"
+                            class="w-full h-64 object-cover lazy">
+                        <div
+                            class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end">
+                            <div class="p-6 text-white">
+                                <h4 class="font-bold text-lg mb-2">产品特性</h4>
+                                <ul class="text-sm space-y-1">
+                                    <li class="flex items-center"><i
+                                            class="fas fa-check-circle mr-2 text-green-400"></i> 高纯度</li>
+                                    <li class="flex items-center"><i
+                                            class="fas fa-check-circle mr-2 text-green-400"></i> 低膨胀系数</li>
+                                    <li class="flex items-center"><i
+                                            class="fas fa-check-circle mr-2 text-green-400"></i> 高温稳定性好</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-2 group-hover:text-blue-800 transition-colors duration-300">莫来石粉
+                        </h3>
+                        <p class="text-gray-600 mb-4">
+                            高纯度莫来石粉，具有优异的高温稳定性和化学惰性，适用于精密铸造、陶瓷、耐火材料等高端应用领域。
+                        </p>
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            <span class="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full">精密铸造</span>
+                            <span class="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full">陶瓷原料</span>
+                            <span class="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full">高温工业</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-500">
+                                <i class="fas fa-certificate text-blue-600 mr-1"></i> 高品质保证
+                            </span>
+                            <a href="#"
+                                class="text-blue-800 hover:text-blue-600 font-medium flex items-center group-hover:translate-x-1 transition-transform duration-300">
+                                查看详情 <i class="fas fa-arrow-right ml-2"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 铸造涂料产品 -->
+                <div class="product-card bg-white animate-fade-in group" style="transition-delay: 0.4s;"
+                    data-category="coating">
+                    <div class="relative overflow-hidden">
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='256' viewBox='0 0 400 256'%3E%3Crect width='400' height='256' fill='%23f0f0f0'/%3E%3C/svg%3E"
+                            data-src="assets/images/products/lost-foam-steel-coating.jpg" alt="铸造涂料"
+                            class="w-full h-64 object-cover lazy">
+                        <div
+                            class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end">
+                            <div class="p-6 text-white">
+                                <h4 class="font-bold text-lg mb-2">产品特性</h4>
+                                <ul class="text-sm space-y-1">
+                                    <li class="flex items-center"><i
+                                            class="fas fa-check-circle mr-2 text-green-400"></i> 良好悬浮性</li>
+                                    <li class="flex items-center"><i
+                                            class="fas fa-check-circle mr-2 text-green-400"></i> 优异涂刷性</li>
+                                    <li class="flex items-center"><i
+                                            class="fas fa-check-circle mr-2 text-green-400"></i> 高温稳定性好</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="absolute top-4 right-4 bg-green-600 text-white text-xs px-3 py-1 rounded-full">
+                            新品
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-2 group-hover:text-blue-800 transition-colors duration-300">铸造涂料
+                        </h3>
+                        <p class="text-gray-600 mb-4">
+                            高性能铸造涂料，包括水基和醇基系列，具有优异的悬浮性、涂刷性和高温性能，有效提高铸件表面质量。
+                        </p>
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            <span class="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full">水基涂料</span>
+                            <span class="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full">醇基涂料</span>
+                            <span class="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full">环保型</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-500">
+                                <i class="fas fa-certificate text-blue-600 mr-1"></i> 环保认证
+                            </span>
+                            <a href="#"
+                                class="text-blue-800 hover:text-blue-600 font-medium flex items-center group-hover:translate-x-1 transition-transform duration-300">
+                                查看详情 <i class="fas fa-arrow-right ml-2"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 铝矾土骨料产品 -->
+                <div class="product-card bg-white animate-fade-in group" style="transition-delay: 0.1s;"
+                    data-category="refractory">
+                    <div class="relative overflow-hidden">
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='256' viewBox='0 0 400 256'%3E%3Crect width='400' height='256' fill='%23f0f0f0'/%3E%3C/svg%3E"
+                            data-src="assets/images/products/alumina-aggregate-sample.jpg" alt="铝矾土骨料"
+                            class="w-full h-64 object-cover lazy">
+                        <div
+                            class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end">
+                            <div class="p-6 text-white">
+                                <h4 class="font-bold text-lg mb-2">产品特性</h4>
+                                <ul class="text-sm space-y-1">
+                                    <li class="flex items-center"><i
+                                            class="fas fa-check-circle mr-2 text-green-400"></i> 颗粒均匀</li>
+                                    <li class="flex items-center"><i
+                                            class="fas fa-check-circle mr-2 text-green-400"></i> 高密度</li>
+                                    <li class="flex items-center"><i
+                                            class="fas fa-check-circle mr-2 text-green-400"></i> 耐高温</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-2 group-hover:text-blue-800 transition-colors duration-300">
+                            铝矾土骨料</h3>
+                        <p class="text-gray-600 mb-4">
+                            高纯度铝矾土骨料，颗粒均匀，密度高，适用于各种高温工业窑炉内衬、浇注料等。
+                        </p>
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            <span class="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full">颗粒均匀</span>
+                            <span class="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full">高密度</span>
+                            <span class="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full">耐高温</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-500">
+                                <i class="fas fa-certificate text-blue-600 mr-1"></i> 高品质保证
+                            </span>
+                            <a href="#"
+                                class="text-blue-800 hover:text-blue-600 font-medium flex items-center group-hover:translate-x-1 transition-transform duration-300">
+                                查看详情 <i class="fas fa-arrow-right ml-2"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 醇基铸造涂料产品 -->
+                <div class="product-card bg-white animate-fade-in group" style="transition-delay: 0.2s;"
+                    data-category="coating">
+                    <div class="relative overflow-hidden">
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='256' viewBox='0 0 400 256'%3E%3Crect width='400' height='256' fill='%23f0f0f0'/%3E%3C/svg%3E"
+                            data-src="assets/images/products/aluminum-coating.jpg" alt="醇基铸造涂料"
+                            class="w-full h-64 object-cover lazy">
+                        <div
+                            class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end">
+                            <div class="p-6 text-white">
+                                <h4 class="font-bold text-lg mb-2">产品特性</h4>
+                                <ul class="text-sm space-y-1">
+                                    <li class="flex items-center"><i
+                                            class="fas fa-check-circle mr-2 text-green-400"></i> 快干型</li>
+                                    <li class="flex items-center"><i
+                                            class="fas fa-check-circle mr-2 text-green-400"></i> 高悬浮性</li>
+                                    <li class="flex items-center"><i
+                                            class="fas fa-check-circle mr-2 text-green-400"></i> 易涂刷</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="absolute top-4 right-4 bg-green-600 text-white text-xs px-3 py-1 rounded-full">
+                            新品
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-2 group-hover:text-blue-800 transition-colors duration-300">
+                            醇基铸造涂料</h3>
+                        <p class="text-gray-600 mb-4">
+                            高性能醇基铸造涂料，快干型，具有优异的悬浮性和涂刷性，适用于各类铸件的表面处理。
+                        </p>
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            <span class="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full">快干型</span>
+                            <span class="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full">高悬浮性</span>
+                            <span class="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full">易涂刷</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-500">
+                                <i class="fas fa-certificate text-blue-600 mr-1"></i> 环保认证
+                            </span>
+                            <a href="#"
+                                class="text-blue-800 hover:text-blue-600 font-medium flex items-center group-hover:translate-x-1 transition-transform duration-300">
+                                查看详情 <i class="fas fa-arrow-right ml-2"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-12">
+                <a href="#"
+                    class="inline-block bg-gradient text-white px-8 py-3 rounded-md text-lg font-medium hover:shadow-lg transition duration-300 transform hover:-translate-y-1">
+                    查看全部产品 <i class="fas fa-arrow-right ml-2"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- 客户案例 -->
+    <section class="py-20 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">成功案例</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">我们的产品已广泛应用于各个领域，赢得了众多客户的信赖</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- 案例1 -->
+                <div
+                    class="bg-white rounded-lg shadow-md overflow-hidden animate-fade-in group hover:shadow-xl transition-all duration-500">
+                    <div class="relative overflow-hidden h-48">
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='192' viewBox='0 0 400 192'%3E%3Crect width='400' height='192' fill='%23f0f0f0'/%3E%3C/svg%3E"
+                            data-src="assets/images/cases/steel-industry.jpg" alt="钢铁行业案例"
+                            class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 lazy">
+                        <div class="absolute top-4 left-4 bg-blue-800 text-white text-xs px-3 py-1 rounded-full">
+                            钢铁行业
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-2 group-hover:text-blue-800 transition-colors duration-300">
+                            某大型钢铁集团</h3>
+                        <p class="text-gray-600 mb-4">
+                            为客户提供高纯度铝矾土和莫来石粉产品，用于高炉内衬和热风炉，显著提高了设备使用寿命和生产效率。
+                        </p>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="flex text-yellow-400">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                </div>
+                                <span class="text-sm text-gray-500 ml-2">5.0</span>
+                            </div>
+                            <a href="#"
+                                class="text-blue-800 hover:text-blue-600 font-medium flex items-center group-hover:translate-x-1 transition-transform duration-300">
+                                查看详情 <i class="fas fa-arrow-right ml-2"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 案例2 -->
+                <div class="bg-white rounded-lg shadow-md overflow-hidden animate-fade-in group hover:shadow-xl transition-all duration-500"
+                    style="transition-delay: 0.2s;">
+                    <div class="relative overflow-hidden h-48">
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='192' viewBox='0 0 400 192'%3E%3Crect width='400' height='192' fill='%23f0f0f0'/%3E%3C/svg%3E"
+                            data-src="assets/images/cases/auto-manufacturing.jpg" alt="汽车制造案例"
+                            class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 lazy">
+                        <div class="absolute top-4 left-4 bg-green-600 text-white text-xs px-3 py-1 rounded-full">
+                            汽车制造
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-2 group-hover:text-blue-800 transition-colors duration-300">
+                            某知名汽车零部件制造商</h3>
+                        <p class="text-gray-600 mb-4">
+                            为客户提供高性能铸造涂料，用于汽车发动机缸体和缸盖的精密铸造，显著提高了铸件表面质量和成品率。
+                        </p>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="flex text-yellow-400">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star-half-alt"></i>
+                                </div>
+                                <span class="text-sm text-gray-500 ml-2">4.5</span>
+                            </div>
+                            <a href="#"
+                                class="text-blue-800 hover:text-blue-600 font-medium flex items-center group-hover:translate-x-1 transition-transform duration-300">
+                                查看详情 <i class="fas fa-arrow-right ml-2"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 案例3 -->
+                <div class="bg-white rounded-lg shadow-md overflow-hidden animate-fade-in group hover:shadow-xl transition-all duration-500"
+                    style="transition-delay: 0.4s;">
+                    <div class="relative overflow-hidden h-48">
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='192' viewBox='0 0 400 192'%3E%3Crect width='400' height='192' fill='%23f0f0f0'/%3E%3C/svg%3E"
+                            data-src="assets/images/cases/power-industry.jpg" alt="电力行业案例"
+                            class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 lazy">
+                        <div class="absolute top-4 left-4 bg-purple-600 text-white text-xs px-3 py-1 rounded-full">
+                            电力行业
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-2 group-hover:text-blue-800 transition-colors duration-300">
+                            某大型电力公司</h3>
+                        <p class="text-gray-600 mb-4">
+                            为客户提供高纯度铝矾土骨料和莫来石粉，用于火力发电厂锅炉内衬和烟囱防腐，延长了设备使用寿命。
+                        </p>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="flex text-yellow-400">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                </div>
+                                <span class="text-sm text-gray-500 ml-2">5.0</span>
+                            </div>
+                            <a href="#"
+                                class="text-blue-800 hover:text-blue-600 font-medium flex items-center group-hover:translate-x-1 transition-transform duration-300">
+                                查看详情 <i class="fas fa-arrow-right ml-2"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-12">
+                <a href="#"
+                    class="inline-block bg-gradient text-white px-8 py-3 rounded-md text-lg font-medium hover:shadow-lg transition duration-300 transform hover:-translate-y-1">
+                    查看更多案例 <i class="fas fa-arrow-right ml-2"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- AI应用方案 -->
+    <section id="ai-tool" class="py-20 bg-white relative overflow-hidden">
+        <!-- 背景动效 -->
+        <div class="absolute inset-0 z-0">
+            <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-blue-50 to-indigo-100"></div>
+            <div
+                class="absolute top-1/4 left-1/4 w-64 h-64 bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob">
+            </div>
+            <div
+                class="absolute top-1/3 right-1/4 w-72 h-72 bg-indigo-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000">
+            </div>
+            <div
+                class="absolute bottom-1/4 right-1/3 w-60 h-60 bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-4000">
+            </div>
+        </div>
+
+        <div class="container mx-auto px-4 relative z-10">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">AI产品应用场景分析器</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">
+                    通过人工智能技术，根据您的具体需求，智能推荐最适合的产品组合与使用方案
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <div
+                    class="ai-tool-container p-8 animate-fade-in hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2">
+                    <div class="flex items-center justify-center mb-6">
+                        <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mr-4">
+                            <i class="fas fa-robot text-blue-800 text-2xl"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold">产品应用场景分析</h3>
+                    </div>
+
+                    <div class="mb-6">
+                        <label for="casting-type" class="block text-gray-700 font-medium mb-2">铸造类型</label>
+                        <select id="casting-type"
+                            class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-800 transition-all duration-300">
+                            <option value="">请选择铸造类型</option>
+                            <option value="sand">砂型铸造</option>
+                            <option value="investment">熔模铸造</option>
+                            <option value="die">压铸</option>
+                            <option value="lost-foam">消失模铸造</option>
+                            <option value="centrifugal">离心铸造</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-6">
+                        <label for="material" class="block text-gray-700 font-medium mb-2">铸件材料</label>
+                        <select id="material"
+                            class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-800 transition-all duration-300">
+                            <option value="">请选择铸件材料</option>
+                            <option value="gray-iron">灰铸铁</option>
+                            <option value="ductile-iron">球墨铸铁</option>
+                            <option value="steel">铸钢</option>
+                            <option value="aluminum">铝合金</option>
+                            <option value="copper">铜合金</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-6">
+                        <label for="temperature" class="block text-gray-700 font-medium mb-2">浇注温度 (℃)</label>
+                        <input type="range" id="temperature" min="600" max="1800" step="50" value="1200"
+                            class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-800">
+                        <div class="flex justify-between text-sm text-gray-600 mt-2">
+                            <span>600℃</span>
+                            <span id="temp-value" class="font-medium text-blue-800">1200℃</span>
+                            <span>1800℃</span>
+                        </div>
+                        <style>
+                            #temperature::-webkit-slider-thumb {
+                                -webkit-appearance: none;
+                                appearance: none;
+                                width: 20px;
+                                height: 20px;
+                                border-radius: 50%;
+                                background: #0B3C5D;
+                                cursor: pointer;
+                                border: 2px solid white;
+                                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+                            }
+
+                            #temperature::-moz-range-thumb {
+                                width: 20px;
+                                height: 20px;
+                                border-radius: 50%;
+                                background: #0B3C5D;
+                                cursor: pointer;
+                                border: 2px solid white;
+                                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+                            }
+
+                            #temperature::-ms-thumb {
+                                width: 20px;
+                                height: 20px;
+                                border-radius: 50%;
+                                background: #0B3C5D;
+                                cursor: pointer;
+                                border: 2px solid white;
+                                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+                            }
+                        </style>
+                    </div>
+
+                    <div class="mb-6">
+                        <label for="requirements" class="block text-gray-700 font-medium mb-2">特殊要求</label>
+                        <div class="flex flex-wrap gap-3">
+                            <label
+                                class="inline-flex items-center cursor-pointer hover:bg-blue-50 px-2 py-1 rounded transition-colors duration-300">
+                                <input type="checkbox"
+                                    class="form-checkbox text-blue-800 rounded focus:ring-blue-800 transition-all duration-300 transform hover:scale-110"
+                                    value="high-refractory">
+                                <span class="ml-2 text-gray-700">高耐火性</span>
+                            </label>
+                            <label
+                                class="inline-flex items-center cursor-pointer hover:bg-blue-50 px-2 py-1 rounded transition-colors duration-300">
+                                <input type="checkbox"
+                                    class="form-checkbox text-blue-800 rounded focus:ring-blue-800 transition-all duration-300 transform hover:scale-110"
+                                    value="surface-quality">
+                                <span class="ml-2 text-gray-700">表面质量</span>
+                            </label>
+                            <label
+                                class="inline-flex items-center cursor-pointer hover:bg-blue-50 px-2 py-1 rounded transition-colors duration-300">
+                                <input type="checkbox"
+                                    class="form-checkbox text-blue-800 rounded focus:ring-blue-800 transition-all duration-300 transform hover:scale-110"
+                                    value="eco-friendly">
+                                <span class="ml-2 text-gray-700">环保要求</span>
+                            </label>
+                            <label
+                                class="inline-flex items-center cursor-pointer hover:bg-blue-50 px-2 py-1 rounded transition-colors duration-300">
+                                <input type="checkbox"
+                                    class="form-checkbox text-blue-800 rounded focus:ring-blue-800 transition-all duration-300 transform hover:scale-110"
+                                    value="cost-optimization">
+                                <span class="ml-2 text-gray-700">成本优化</span>
+                            </label>
+                            <label
+                                class="inline-flex items-center cursor-pointer hover:bg-blue-50 px-2 py-1 rounded transition-colors duration-300">
+                                <input type="checkbox"
+                                    class="form-checkbox text-blue-800 rounded focus:ring-blue-800 transition-all duration-300 transform hover:scale-110"
+                                    value="batch-production">
+                                <span class="ml-2 text-gray-700">批量生产</span>
+                            </label>
+                            <label
+                                class="inline-flex items-center cursor-pointer hover:bg-blue-50 px-2 py-1 rounded transition-colors duration-300">
+                                <input type="checkbox"
+                                    class="form-checkbox text-blue-800 rounded focus:ring-blue-800 transition-all duration-300 transform hover:scale-110"
+                                    value="efficiency">
+                                <span class="ml-2 text-gray-700">提高效率</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="mb-6">
+                        <label for="additional-info" class="block text-gray-700 font-medium mb-2">其他需求说明</label>
+                        <textarea id="additional-info" rows="3"
+                            class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-800 transition-all duration-300"
+                            placeholder="请输入您的其他特殊需求..."></textarea>
+                    </div>
+
+                    <button id="analyze-btn"
+                        class="w-full bg-gradient text-white py-3 rounded-md text-lg font-medium hover:shadow-lg transition duration-300 transform hover:-translate-y-1 hover:scale-105 flex items-center justify-center">
+                        <i class="fas fa-brain mr-2"></i> AI智能分析
+                    </button>
+                </div>
+
+                <div class="animate-fade-in" style="transition-delay: 0.3s;">
+                    <div id="result-container" class="hidden">
+                        <div class="bg-blue-50 border-l-4 border-blue-800 p-6 rounded-md mb-8">
+                            <h4 class="text-xl font-bold mb-4">推荐产品方案</h4>
+                            <div id="recommendation-result" class="space-y-4">
+                                <!-- 结果将通过JavaScript动态插入 -->
+                            </div>
+                        </div>
+
+                        <div class="bg-gray-50 p-6 rounded-md">
+                            <h4 class="text-xl font-bold mb-4">应用优势分析</h4>
+                            <div id="advantages-result" class="space-y-3">
+                                <!-- 优势分析将通过JavaScript动态插入 -->
+                            </div>
+                        </div>
+
+                        <div class="mt-8 text-center">
+                            <button
+                                class="bg-secondary text-white px-6 py-2 rounded-md font-medium hover:shadow-lg transition duration-300">
+                                <i class="fas fa-file-pdf mr-2"></i> 下载详细方案
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="initial-prompt" class="text-center">
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='400' viewBox='0 0 600 400'%3E%3Crect width='600' height='400' fill='%23f0f0f0'/%3E%3C/svg%3E"
+                            data-src="assets/images/ai-analysis.jpg" alt="AI分析"
+                            class="w-full rounded-lg shadow-lg mb-6 lazy">
+                        <h3 class="text-2xl font-bold mb-4">智能分析，精准推荐</h3>
+                        <p class="text-gray-600">
+                            我们的AI分析系统基于大量的行业数据和专家经验，能够为您提供最适合的产品组合和应用方案，帮助您优化铸造工艺，提高生产效率和铸件质量。
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 关于我们 -->
+    <section id="about" class="py-20 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <div class="animate-fade-in">
+                    <h2 class="text-3xl md:text-4xl font-bold mb-6">关于我们</h2>
+                    <p class="text-gray-600 mb-6">
+                        示例铸造材料有限公司成立于2018年，是一家专业从事铝矾土、莫来石粉、铸造涂料等铸造材料研发、生产和销售的高科技企业。公司位于河南省郑州市，占地面积20000平方米，拥有先进的生产设备和检测仪器。
+                    </p>
+                    <p class="text-gray-600 mb-6">
+                        我们致力于为客户提供高品质的铸造材料和专业的技术服务，产品广泛应用于汽车、航空、航天、机械、电力等行业。公司拥有一支高素质的研发团队，不断开发新产品，提高产品质量，满足客户的不同需求。
+                    </p>
+                    <div class="grid grid-cols-2 gap-6 mb-8">
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mr-4">
+                                <i class="fas fa-certificate text-blue-800 text-xl"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold">ISO9001认证</h4>
+                                <p class="text-sm text-gray-600">质量管理体系认证</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mr-4">
+                                <i class="fas fa-award text-blue-800 text-xl"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold">高新技术企业</h4>
+                                <p class="text-sm text-gray-600">科技创新认证</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mr-4">
+                                <i class="fas fa-users text-blue-800 text-xl"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold">专业团队</h4>
+                                <p class="text-sm text-gray-600">资深技术专家</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mr-4">
+                                <i class="fas fa-globe text-blue-800 text-xl"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold">全球服务</h4>
+                                <p class="text-sm text-gray-600">出口多个国家</p>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="#"
+                        class="inline-block bg-gradient text-white px-6 py-3 rounded-md font-medium hover:shadow-lg transition duration-300">
+                        了解更多 <i class="fas fa-arrow-right ml-2"></i>
+                    </a>
+                </div>
+
+                <div class="animate-fade-in" style="transition-delay: 0.3s;">
+                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='400' viewBox='0 0 600 400'%3E%3Crect width='600' height='400' fill='%23f0f0f0'/%3E%3C/svg%3E"
+                        data-src="assets/images/about/factory-warehouse.jpg" alt="工厂环境"
+                        class="w-full rounded-lg shadow-xl lazy">
+                </div>
+            </div>
+
+            <!-- 厂区实景 -->
+            <div class="mt-16">
+                <h3 class="text-2xl font-bold text-center mb-8">厂区实景</h3>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <div class="overflow-hidden rounded-lg shadow-md">
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300'%3E%3Crect width='400' height='300' fill='%23f0f0f0'/%3E%3C/svg%3E"
+                            data-src="assets/images/about/team-safety-meeting.jpg" alt="安全生产会议"
+                            class="w-full h-48 object-cover lazy">
+                    </div>
+                    <div class="overflow-hidden rounded-lg shadow-md">
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300'%3E%3Crect width='400' height='300' fill='%23f0f0f0'/%3E%3C/svg%3E"
+                            data-src="assets/images/about/loading-logistics.jpg" alt="仓储物流"
+                            class="w-full h-48 object-cover lazy">
+                    </div>
+                    <div class="overflow-hidden rounded-lg shadow-md">
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300'%3E%3Crect width='400' height='300' fill='%23f0f0f0'/%3E%3C/svg%3E"
+                            data-src="assets/images/about/meeting-room.jpg" alt="办公环境"
+                            class="w-full h-48 object-cover lazy">
+                    </div>
+                    <div class="overflow-hidden rounded-lg shadow-md">
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300'%3E%3Crect width='400' height='300' fill='%23f0f0f0'/%3E%3C/svg%3E"
+                            data-src="assets/images/about/granularity-check.jpg" alt="产品粒度检测"
+                            class="w-full h-48 object-cover lazy">
+                    </div>
+                    <div class="overflow-hidden rounded-lg shadow-md">
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300'%3E%3Crect width='400' height='300' fill='%23f0f0f0'/%3E%3C/svg%3E"
+                            data-src="assets/images/about/workshop-equipment.jpg" alt="生产车间"
+                            class="w-full h-48 object-cover lazy">
+                    </div>
+                    <div class="overflow-hidden rounded-lg shadow-md">
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300'%3E%3Crect width='400' height='300' fill='%23f0f0f0'/%3E%3C/svg%3E"
+                            data-src="assets/images/about/grinding-mill.jpg" alt="研磨设备"
+                            class="w-full h-48 object-cover lazy">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 联系我们 -->
+    <section id="contact" class="py-20 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">联系我们</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">
+                    如果您对我们的产品感兴趣，或者有任何问题，请随时与我们联系，我们将竭诚为您服务
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                <div class="bg-gray-50 p-8 rounded-lg shadow-md animate-fade-in">
+                    <h3 class="text-2xl font-bold mb-6">发送消息</h3>
+                    <form>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                            <div>
+                                <label for="name" class="block text-gray-700 font-medium mb-2">姓名</label>
+                                <input type="text" id="name"
+                                    class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-800"
+                                    placeholder="请输入您的姓名">
+                            </div>
+                            <div>
+                                <label for="company" class="block text-gray-700 font-medium mb-2">公司</label>
+                                <input type="text" id="company"
+                                    class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-800"
+                                    placeholder="请输入您的公司名称">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                            <div>
+                                <label for="email" class="block text-gray-700 font-medium mb-2">邮箱</label>
+                                <input type="email" id="email"
+                                    class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-800"
+                                    placeholder="请输入您的邮箱">
+                            </div>
+                            <div>
+                                <label for="phone" class="block text-gray-700 font-medium mb-2">电话</label>
+                                <input type="tel" id="phone"
+                                    class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-800"
+                                    placeholder="请输入您的电话">
+                            </div>
+                        </div>
+
+                        <div class="mb-6">
+                            <label for="subject" class="block text-gray-700 font-medium mb-2">主题</label>
+                            <input type="text" id="subject"
+                                class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-800"
+                                placeholder="请输入消息主题">
+                        </div>
+
+                        <div class="mb-6">
+                            <label for="message" class="block text-gray-700 font-medium mb-2">消息</label>
+                            <textarea id="message" rows="5"
+                                class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-800"
+                                placeholder="请输入您的消息内容"></textarea>
+                        </div>
+
+                        <button type="submit"
+                            class="w-full bg-gradient text-white py-3 rounded-md font-medium hover:shadow-lg transition duration-300">
+                            发送消息 <i class="fas fa-paper-plane ml-2"></i>
+                        </button>
+                    </form>
+                </div>
+
+                <div class="animate-fade-in" style="transition-delay: 0.3s;">
+                    <div class="bg-gray-50 p-8 rounded-lg shadow-md mb-8">
+                        <h3 class="text-2xl font-bold mb-6">联系方式</h3>
+                        <div class="space-y-6">
+                            <div class="flex items-start">
+                                <div
+                                    class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mr-4 shrink-0">
+                                    <i class="fas fa-map-marker-alt text-blue-800 text-xl"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-lg mb-1">地址</h4>
+                                    <p class="text-gray-600">河南省郑州市示例产业园 12 号楼</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-start">
+                                <div
+                                    class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mr-4 shrink-0">
+                                    <i class="fas fa-phone-alt text-blue-800 text-xl"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-lg mb-1">电话</h4>
+                                    <p class="text-gray-600">+86 000-0000 0000</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-start">
+                                <div
+                                    class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mr-4 shrink-0">
+                                    <i class="fas fa-envelope text-blue-800 text-xl"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-lg mb-1">邮箱</h4>
+                                    <p class="text-gray-600">info@example-casting.com</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-start">
+                                <div
+                                    class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mr-4 shrink-0">
+                                    <i class="fas fa-clock text-blue-800 text-xl"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-lg mb-1">工作时间</h4>
+                                    <p class="text-gray-600">周一至周五: 9:00 - 18:00</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-50 p-8 rounded-lg shadow-md">
+                        <h3 class="text-2xl font-bold mb-6">关注我们</h3>
+                        <div class="flex space-x-4">
+                            <a href="#"
+                                class="w-12 h-12 bg-blue-800 text-white rounded-full flex items-center justify-center hover:bg-blue-700 transition duration-300">
+                                <i class="fab fa-weixin text-xl"></i>
+                            </a>
+                            <a href="#"
+                                class="w-12 h-12 bg-blue-500 text-white rounded-full flex items-center justify-center hover:bg-blue-400 transition duration-300">
+                                <i class="fab fa-weibo text-xl"></i>
+                            </a>
+                            <a href="#"
+                                class="w-12 h-12 bg-red-600 text-white rounded-full flex items-center justify-center hover:bg-red-500 transition duration-300">
+                                <i class="fas fa-envelope text-xl"></i>
+                            </a>
+                            <a href="#"
+                                class="w-12 h-12 bg-blue-700 text-white rounded-full flex items-center justify-center hover:bg-blue-600 transition duration-300">
+                                <i class="fab fa-linkedin-in text-xl"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div>
+                    <div class="flex items-center mb-6">
+                        <img src="assets/images/company-logo-light.svg" alt="示例铸造材料有限公司" class="h-10 mr-3">
+                        <h3 class="text-xl font-bold">示例铸造</h3>
+                    </div>
+                    <p class="text-gray-400 mb-6">
+                        专业从事铝矾土、莫来石粉、铸造涂料等铸造材料研发、生产和销售的高科技企业。
+                    </p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white transition duration-300">
+                            <i class="fab fa-weixin text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition duration-300">
+                            <i class="fab fa-weibo text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition duration-300">
+                            <i class="fab fa-linkedin-in text-xl"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="text-lg font-bold mb-6">产品中心</h3>
+                    <ul class="space-y-3">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition duration-300">铝矾土</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition duration-300">莫来石粉</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition duration-300">铸造涂料</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition duration-300">耐火材料</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition duration-300">陶瓷原料</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h3 class="text-lg font-bold mb-6">快速链接</h3>
+                    <ul class="space-y-3">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition duration-300">首页</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition duration-300">关于我们</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition duration-300">产品中心</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition duration-300">AI应用方案</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition duration-300">联系我们</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h3 class="text-lg font-bold mb-6">联系我们</h3>
+                    <ul class="space-y-3">
+                        <li class="flex items-start">
+                            <i class="fas fa-map-marker-alt mt-1 mr-3 text-gray-400"></i>
+                            <span class="text-gray-400">河南省郑州市示例产业园 12 号楼</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-phone-alt mt-1 mr-3 text-gray-400"></i>
+                            <span class="text-gray-400">+86 000-0000 0000</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-envelope mt-1 mr-3 text-gray-400"></i>
+                            <span class="text-gray-400">info@example-casting.com</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="border-t border-gray-800 mt-12 pt-8 text-center">
+                <p class="text-gray-400">© 2026 示例铸造材料有限公司. 保留所有权利.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 返回顶部按钮 -->
+    <button id="back-to-top"
+        class="fixed bottom-8 right-8 bg-blue-800 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg opacity-0 invisible transition-all duration-300">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
+    <script>
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function () {
+            // 加载动画
+            setTimeout(function () {
+                document.querySelector('.loader').classList.add('hidden');
+            }, 1000);
+
+            // 移动端菜单
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+
+            mobileMenuButton.addEventListener('click', function () {
+                mobileMenu.classList.toggle('active');
+            });
+
+            // 滚动动画
+            const animateElements = document.querySelectorAll('.animate-fade-in');
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            animateElements.forEach(element => {
+                observer.observe(element);
+            });
+
+            // 返回顶部按钮
+            const backToTopButton = document.getElementById('back-to-top');
+
+            window.addEventListener('scroll', function () {
+                if (window.pageYOffset > 300) {
+                    backToTopButton.classList.remove('opacity-0', 'invisible');
+                    backToTopButton.classList.add('opacity-100', 'visible');
+                } else {
+                    backToTopButton.classList.remove('opacity-100', 'visible');
+                    backToTopButton.classList.add('opacity-0', 'invisible');
+                }
+            });
+
+            backToTopButton.addEventListener('click', function () {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            });
+
+            // 温度滑块
+            const temperatureSlider = document.getElementById('temperature');
+            const tempValue = document.getElementById('temp-value');
+
+            temperatureSlider.addEventListener('input', function () {
+                tempValue.textContent = this.value + '℃';
+                // 更新滑块颜色
+                const value = (this.value - this.min) / (this.max - this.min) * 100;
+                this.style.background = `linear-gradient(to right, #0B3C5D ${value}%, #e2e8f0 ${value}%)`;
+            });
+
+            // 初始化滑块颜色
+            temperatureSlider.dispatchEvent(new Event('input'));
+
+            // AI分析工具
+            const analyzeBtn = document.getElementById('analyze-btn');
+            const resultContainer = document.getElementById('result-container');
+            const initialPrompt = document.getElementById('initial-prompt');
+            const recommendationResult = document.getElementById('recommendation-result');
+            const advantagesResult = document.getElementById('advantages-result');
+
+            analyzeBtn.addEventListener('click', function () {
+                const castingType = document.getElementById('casting-type').value;
+                const material = document.getElementById('material').value;
+                const temperature = document.getElementById('temperature').value;
+
+                // 获取选中的特殊要求
+                const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+                const requirements = [];
+                checkboxes.forEach(checkbox => {
+                    if (checkbox.checked) {
+                        requirements.push(checkbox.value);
+                    }
+                });
+
+                // 验证输入
+                if (!castingType || !material) {
+                    alert('请选择铸造类型和铸件材料');
+                    return;
+                }
+
+                // 显示加载状态
+                analyzeBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> 分析中...';
+                analyzeBtn.disabled = true;
+
+                // 模拟API请求延迟
+                setTimeout(function () {
+                    // 根据输入生成推荐结果
+                    let recommendations = [];
+                    let advantages = [];
+
+                    // 根据铸造类型和材料生成推荐
+                    if (castingType === 'lost-foam' && material === 'steel') {
+                        recommendations = [
+                            {
+                                name: '消失模铸钢专用涂料',
+                                description: '采用高纯度铝矾土和锆英粉为主要原料，具有优异的高温稳定性和抗粘砂性能',
+                                image: 'assets/images/products/lost-foam-steel-coating.jpg'
+                            },
+                            {
+                                name: '高铝矾土熟料',
+                                description: 'Al₂O₃含量≥85%，耐火度≥1790℃，用于消失模铸钢涂料的主要原料',
+                                image: 'assets/images/products/high-alumina熟料.jpg'
+                            },
+                            {
+                                name: '锆英粉',
+                                description: 'ZrO₂含量≥65%，提高涂料的高温稳定性和抗粘砂性能',
+                                image: 'assets/images/products/investment-steel-coating.jpg'
+                            }
+                        ];
+
+                        advantages = [
+                            '有效防止铸钢件表面增碳缺陷',
+                            '提高铸件表面光洁度，减少加工余量',
+                            '优异的高温稳定性，适用于1500℃以上的高温环境',
+                            '良好的透气性，有助于泡沫模型热解产物的排出',
+                            '优异的抗粘砂性能，减少铸件清理工作量',
+                            '稳定的质量，确保铸件一致性'
+                        ];
+                    } else if (castingType === 'investment' && material === 'steel') {
+                        recommendations = [
+                            {
+                                name: '熔模铸造面层涂料',
+                                description: '采用高纯度莫来石粉和锆英粉为主要原料，具有优异的流平性和涂挂性',
+                                image: 'assets/images/products/investment-steel-coating.jpg'
+                            },
+                            {
+                                name: '莫来石粉',
+                                description: 'Al₂O₃含量44%-46%，SiO₂含量≥50%，用于熔模铸造面层涂料的主要原料',
+                                image: 'assets/images/products/mullite-powder.jpg'
+                            },
+                            {
+                                name: '熔模铸造背层涂料',
+                                description: '采用高纯度铝矾土为主要原料，提高型壳强度和稳定性',
+                                image: 'assets/images/products/high-alumina熟料.jpg'
+                            }
+                        ];
+
+                        advantages = [
+                            '提高型壳强度和高温稳定性',
+                            '减少铸件表面缺陷，提高表面质量',
+                            '优异的化学稳定性，不与钢液发生反应',
+                            '良好的溃散性，便于清砂',
+                            '优异的流平性和涂挂性，确保涂层均匀',
+                            '适用于复杂形状铸件的铸造'
+                        ];
+                    } else if (castingType === 'sand' && material === 'gray-iron') {
+                        recommendations = [
+                            {
+                                name: '灰铸铁专用涂料',
+                                description: '采用高纯度石墨粉和铝矾土为主要原料，具有良好的涂挂性和抗粘砂性能',
+                                image: 'assets/images/products/gray-iron-coating.jpg'
+                            },
+                            {
+                                name: '石墨粉',
+                                description: '固定碳含量≥90%，用于灰铸铁涂料的主要原料，提高涂料的润滑性和抗粘砂性能',
+                                image: 'assets/images/products/gray-iron-coating.jpg'
+                            },
+                            {
+                                name: '中铝矾土熟料',
+                                description: 'Al₂O₃含量60%-85%，提高涂料的高温稳定性',
+                                image: 'assets/images/products/medium-alumina熟料.jpg'
+                            }
+                        ];
+
+                        advantages = [
+                            '有效防止灰铸铁件粘砂缺陷',
+                            '提高铸件表面光洁度',
+                            '良好的透气性，减少气孔缺陷',
+                            '易于清理，不影响铸件后续加工',
+                            '良好的涂挂性，确保涂层均匀',
+                            '稳定的质量，确保铸件一致性'
+                        ];
+                    } else if (castingType === 'sand' && material === 'ductile-iron') {
+                        recommendations = [
+                            {
+                                name: '球墨铸铁专用涂料',
+                                description: '采用特殊配方，具有良好的涂挂性和高温稳定性，有效防止球墨铸铁件粘砂',
+                                image: 'assets/images/products/gray-iron-coating.jpg'
+                            },
+                            {
+                                name: '高铝矾土熟料',
+                                description: 'Al₂O₃含量≥85%，耐火度≥1790℃，用于球墨铸铁涂料的主要原料',
+                                image: 'assets/images/products/high-alumina熟料.jpg'
+                            },
+                            {
+                                name: '石墨粉',
+                                description: '固定碳含量≥90%，提高涂料的润滑性和抗粘砂性能',
+                                image: 'assets/images/products/gray-iron-coating.jpg'
+                            }
+                        ];
+
+                        advantages = [
+                            '有效防止球墨铸铁件粘砂缺陷',
+                            '提高铸件表面光洁度',
+                            '良好的高温稳定性，适用于高温浇注',
+                            '易于清理，不影响铸件后续加工',
+                            '良好的涂挂性，确保涂层均匀',
+                            '稳定的质量，确保铸件一致性'
+                        ];
+                    } else if (castingType === 'sand' && material === 'steel') {
+                        recommendations = [
+                            {
+                                name: '铸钢专用涂料',
+                                description: '采用高纯度铝矾土和锆英粉为主要原料，具有优异的高温稳定性和抗粘砂性能',
+                                image: 'assets/images/products/lost-foam-steel-coating.jpg'
+                            },
+                            {
+                                name: '锆英粉',
+                                description: 'ZrO₂含量≥65%，用于铸钢涂料的主要原料，提高涂料的高温稳定性',
+                                image: 'assets/images/products/investment-steel-coating.jpg'
+                            },
+                            {
+                                name: '高铝矾土熟料',
+                                description: 'Al₂O₃含量≥85%，耐火度≥1790℃，提高涂料的高温稳定性',
+                                image: 'assets/images/products/high-alumina熟料.jpg'
+                            }
+                        ];
+
+                        advantages = [
+                            '有效防止铸钢件表面缺陷',
+                            '提高铸件表面光洁度，减少加工余量',
+                            '优异的高温稳定性，适用于1500℃以上的高温环境',
+                            '良好的透气性，减少气孔缺陷',
+                            '优异的抗粘砂性能，减少铸件清理工作量',
+                            '稳定的质量，确保铸件一致性'
+                        ];
+                    } else if (castingType === 'sand' && material === 'aluminum') {
+                        recommendations = [
+                            {
+                                name: '铝合金铸造专用涂料',
+                                description: '采用特殊配方，具有良好的涂挂性和高温稳定性，有效防止铝合金铸件粘砂',
+                                image: 'assets/images/products/aluminum-coating.jpg'
+                            },
+                            {
+                                name: '滑石粉',
+                                description: '用于铝合金铸造涂料的主要原料，提高涂料的润滑性和抗粘砂性能',
+                                image: 'assets/images/products/aluminum-coating.jpg'
+                            },
+                            {
+                                name: '膨润土',
+                                description: '提高涂料的悬浮性和涂挂性',
+                                image: 'assets/images/products/aluminum-coating.jpg'
+                            }
+                        ];
+
+                        advantages = [
+                            '有效防止铝合金铸件粘砂和氧化',
+                            '提高铸件表面光洁度',
+                            '良好的透气性，减少气孔缺陷',
+                            '易于清理，不影响铸件后续加工',
+                            '良好的涂挂性，确保涂层均匀',
+                            '稳定的质量，确保铸件一致性'
+                        ];
+                    } else if (castingType === 'sand' && material === 'copper') {
+                        recommendations = [
+                            {
+                                name: '铜合金铸造专用涂料',
+                                description: '采用特殊配方，具有良好的涂挂性和高温稳定性，有效防止铜合金铸件粘砂',
+                                image: 'assets/images/products/aluminum-coating.jpg'
+                            },
+                            {
+                                name: '石墨粉',
+                                description: '固定碳含量≥90%，提高涂料的润滑性和抗粘砂性能',
+                                image: 'assets/images/products/gray-iron-coating.jpg'
+                            },
+                            {
+                                name: '高铝矾土熟料',
+                                description: 'Al₂O₃含量≥85%，提高涂料的高温稳定性',
+                                image: 'assets/images/products/high-alumina熟料.jpg'
+                            }
+                        ];
+
+                        advantages = [
+                            '有效防止铜合金铸件粘砂',
+                            '提高铸件表面光洁度',
+                            '良好的透气性，减少气孔缺陷',
+                            '易于清理，不影响铸件后续加工',
+                            '良好的涂挂性，确保涂层均匀',
+                            '稳定的质量，确保铸件一致性'
+                        ];
+                    } else if (castingType === 'investment' && material === 'gray-iron') {
+                        recommendations = [
+                            {
+                                name: '熔模铸造底层涂料',
+                                description: '采用高纯度莫来石粉为主要原料，具有优异的流平性和涂挂性',
+                                image: 'assets/images/products/investment-steel-coating.jpg'
+                            },
+                            {
+                                name: '莫来石粉',
+                                description: 'Al₂O₃含量44%-46%，SiO₂含量≥50%，用于熔模铸造底层涂料的主要原料',
+                                image: 'assets/images/products/mullite-powder.jpg'
+                            },
+                            {
+                                name: '熔模铸造背层涂料',
+                                description: '采用高纯度铝矾土为主要原料，提高型壳强度和稳定性',
+                                image: 'assets/images/products/high-alumina熟料.jpg'
+                            }
+                        ];
+
+                        advantages = [
+                            '提高型壳强度和高温稳定性',
+                            '减少铸件表面缺陷，提高表面质量',
+                            '优异的化学稳定性，不与铁液发生反应',
+                            '良好的溃散性，便于清砂',
+                            '优异的流平性和涂挂性，确保涂层均匀',
+                            '适用于复杂形状铸件的铸造'
+                        ];
+                    } else if (castingType === 'investment' && material === 'ductile-iron') {
+                        recommendations = [
+                            {
+                                name: '熔模铸造面层涂料',
+                                description: '采用高纯度莫来石粉和锆英粉为主要原料，具有优异的流平性和涂挂性',
+                                image: 'assets/images/products/investment-steel-coating.jpg'
+                            },
+                            {
+                                name: '锆英粉',
+                                description: 'ZrO₂含量≥65%，用于熔模铸造面层涂料的主要原料，提高涂料的高温稳定性',
+                                image: 'assets/images/products/investment-steel-coating.jpg'
+                            },
+                            {
+                                name: '熔模铸造背层涂料',
+                                description: '采用高纯度铝矾土为主要原料，提高型壳强度和稳定性',
+                                image: 'assets/images/products/high-alumina熟料.jpg'
+                            }
+                        ];
+
+                        advantages = [
+                            '提高型壳强度和高温稳定性',
+                            '减少铸件表面缺陷，提高表面质量',
+                            '优异的化学稳定性，不与铁液发生反应',
+                            '良好的溃散性，便于清砂',
+                            '优异的流平性和涂挂性，确保涂层均匀',
+                            '适用于复杂形状铸件的铸造'
+                        ];
+                    } else if (castingType === 'investment' && material === 'aluminum') {
+                        recommendations = [
+                            {
+                                name: '熔模铸造铝合金专用涂料',
+                                description: '采用特殊配方，具有良好的流平性和涂挂性，有效防止铝合金铸件粘砂',
+                                image: 'assets/images/products/aluminum-coating.jpg'
+                            },
+                            {
+                                name: '滑石粉',
+                                description: '用于铝合金铸造涂料的主要原料，提高涂料的润滑性和抗粘砂性能',
+                                image: 'assets/images/products/aluminum-coating.jpg'
+                            },
+                            {
+                                name: '膨润土',
+                                description: '提高涂料的悬浮性和涂挂性',
+                                image: 'assets/images/products/aluminum-coating.jpg'
+                            }
+                        ];
+
+                        advantages = [
+                            '提高型壳强度和高温稳定性',
+                            '减少铸件表面缺陷，提高表面质量',
+                            '有效防止铝合金铸件氧化',
+                            '良好的溃散性，便于清砂',
+                            '优异的流平性和涂挂性，确保涂层均匀',
+                            '适用于复杂形状铸件的铸造'
+                        ];
+                    } else if (castingType === 'investment' && material === 'copper') {
+                        recommendations = [
+                            {
+                                name: '熔模铸造铜合金专用涂料',
+                                description: '采用特殊配方，具有良好的流平性和涂挂性，有效防止铜合金铸件粘砂',
+                                image: 'assets/images/products/aluminum-coating.jpg'
+                            },
+                            {
+                                name: '石墨粉',
+                                description: '固定碳含量≥90%，提高涂料的润滑性和抗粘砂性能',
+                                image: 'assets/images/products/gray-iron-coating.jpg'
+                            },
+                            {
+                                name: '高铝矾土熟料',
+                                description: 'Al₂O₃含量≥85%，提高涂料的高温稳定性',
+                                image: 'assets/images/products/high-alumina熟料.jpg'
+                            }
+                        ];
+
+                        advantages = [
+                            '提高型壳强度和高温稳定性',
+                            '减少铸件表面缺陷，提高表面质量',
+                            '优异的化学稳定性，不与铜液发生反应',
+                            '良好的溃散性，便于清砂',
+                            '优异的流平性和涂挂性，确保涂层均匀',
+                            '适用于复杂形状铸件的铸造'
+                        ];
+                    } else if (castingType === 'die' && material === 'aluminum') {
+                        recommendations = [
+                            {
+                                name: '压铸铝合金专用涂料',
+                                description: '采用特殊配方，具有良好的润滑性和高温稳定性，有效延长模具寿命',
+                                image: 'assets/images/products/aluminum-coating.jpg'
+                            },
+                            {
+                                name: '压铸脱模剂',
+                                description: '采用特殊配方，具有良好的脱模性能，有效延长模具寿命',
+                                image: 'assets/images/products/aluminum-coating.jpg'
+                            },
+                            {
+                                name: '压铸模具清洗剂',
+                                description: '采用特殊配方，有效清除模具表面的积碳和残留物',
+                                image: 'assets/images/products/aluminum-coating.jpg'
+                            }
+                        ];
+
+                        advantages = [
+                            '有效延长模具寿命',
+                            '提高铸件表面光洁度',
+                            '良好的润滑性，减少压铸力',
+                            '易于清理，不影响铸件后续加工',
+                            '优异的脱模性能，提高生产效率',
+                            '稳定的质量，确保铸件一致性'
+                        ];
+                    } else if (castingType === 'die' && material === 'copper') {
+                        recommendations = [
+                            {
+                                name: '压铸铜合金专用涂料',
+                                description: '采用特殊配方，具有良好的润滑性和高温稳定性，有效延长模具寿命',
+                                image: 'assets/images/products/aluminum-coating.jpg'
+                            },
+                            {
+                                name: '压铸脱模剂',
+                                description: '采用特殊配方，具有良好的脱模性能，有效延长模具寿命',
+                                image: 'assets/images/products/aluminum-coating.jpg'
+                            },
+                            {
+                                name: '压铸模具清洗剂',
+                                description: '采用特殊配方，有效清除模具表面的积碳和残留物',
+                                image: 'assets/images/products/aluminum-coating.jpg'
+                            }
+                        ];
+
+                        advantages = [
+                            '有效延长模具寿命',
+                            '提高铸件表面光洁度',
+                            '良好的润滑性，减少压铸力',
+                            '易于清理，不影响铸件后续加工',
+                            '优异的脱模性能，提高生产效率',
+                            '稳定的质量，确保铸件一致性'
+                        ];
+                    } else if (castingType === 'lost-foam' && material === 'gray-iron') {
+                        recommendations = [
+                            {
+                                name: '消失模灰铸铁专用涂料',
+                                description: '采用高纯度石墨粉和铝矾土为主要原料，具有良好的涂挂性和抗粘砂性能',
+                                image: 'assets/images/products/gray-iron-coating.jpg'
+                            },
+                            {
+                                name: '石墨粉',
+                                description: '固定碳含量≥90%，用于消失模灰铸铁涂料的主要原料，提高涂料的润滑性和抗粘砂性能',
+                                image: 'assets/images/products/gray-iron-coating.jpg'
+                            },
+                            {
+                                name: '中铝矾土熟料',
+                                description: 'Al₂O₃含量60%-85%，提高涂料的高温稳定性',
+                                image: 'assets/images/products/medium-alumina熟料.jpg'
+                            }
+                        ];
+
+                        advantages = [
+                            '有效防止灰铸铁件粘砂缺陷',
+                            '提高铸件表面光洁度',
+                            '良好的透气性，有助于泡沫模型热解产物的排出',
+                            '易于清理，不影响铸件后续加工',
+                            '良好的涂挂性，确保涂层均匀',
+                            '稳定的质量，确保铸件一致性'
+                        ];
+                    } else if (castingType === 'lost-foam' && material === 'ductile-iron') {
+                        recommendations = [
+                            {
+                                name: '消失模球墨铸铁专用涂料',
+                                description: '采用特殊配方，具有良好的涂挂性和高温稳定性，有效防止球墨铸铁件粘砂',
+                                image: 'assets/images/products/gray-iron-coating.jpg'
+                            },
+                            {
+                                name: '高铝矾土熟料',
+                                description: 'Al₂O₃含量≥85%，耐火度≥1790℃，用于消失模球墨铸铁涂料的主要原料',
+                                image: 'assets/images/products/high-alumina熟料.jpg'
+                            },
+                            {
+                                name: '石墨粉',
+                                description: '固定碳含量≥90%，提高涂料的润滑性和抗粘砂性能',
+                                image: 'assets/images/products/gray-iron-coating.jpg'
+                            }
+                        ];
+
+                        advantages = [
+                            '有效防止球墨铸铁件粘砂缺陷',
+                            '提高铸件表面光洁度',
+                            '良好的高温稳定性，适用于高温浇注',
+                            '良好的透气性，有助于泡沫模型热解产物的排出',
+                            '良好的涂挂性，确保涂层均匀',
+                            '稳定的质量，确保铸件一致性'
+                        ];
+                    } else if (castingType === 'lost-foam' && material === 'aluminum') {
+                        recommendations = [
+                            {
+                                name: '消失模铝合金专用涂料',
+                                description: '采用特殊配方，具有良好的涂挂性和高温稳定性，有效防止铝合金铸件粘砂',
+                                image: 'assets/images/products/aluminum-coating.jpg'
+                            },
+                            {
+                                name: '滑石粉',
+                                description: '用于铝合金铸造涂料的主要原料，提高涂料的润滑性和抗粘砂性能',
+                                image: 'assets/images/products/aluminum-coating.jpg'
+                            },
+                            {
+                                name: '膨润土',
+                                description: '提高涂料的悬浮性和涂挂性',
+                                image: 'assets/images/products/aluminum-coating.jpg'
+                            }
+                        ];
+
+                        advantages = [
+                            '有效防止铝合金铸件粘砂和氧化',
+                            '提高铸件表面光洁度',
+                            '良好的透气性，有助于泡沫模型热解产物的排出',
+                            '易于清理，不影响铸件后续加工',
+                            '良好的涂挂性，确保涂层均匀',
+                            '稳定的质量，确保铸件一致性'
+                        ];
+                    } else if (castingType === 'lost-foam' && material === 'copper') {
+                        recommendations = [
+                            {
+                                name: '消失模铜合金专用涂料',
+                                description: '采用特殊配方，具有良好的涂挂性和高温稳定性，有效防止铜合金铸件粘砂',
+                                image: 'assets/images/products/aluminum-coating.jpg'
+                            },
+                            {
+                                name: '石墨粉',
+                                description: '固定碳含量≥90%，提高涂料的润滑性和抗粘砂性能',
+                                image: 'assets/images/products/gray-iron-coating.jpg'
+                            },
+                            {
+                                name: '高铝矾土熟料',
+                                description: 'Al₂O₃含量≥85%，提高涂料的高温稳定性',
+                                image: 'assets/images/products/high-alumina熟料.jpg'
+                            }
+                        ];
+
+                        advantages = [
+                            '有效防止铜合金铸件粘砂',
+                            '提高铸件表面光洁度',
+                            '良好的透气性，有助于泡沫模型热解产物的排出',
+                            '易于清理，不影响铸件后续加工',
+                            '良好的涂挂性，确保涂层均匀',
+                            '稳定的质量，确保铸件一致性'
+                        ];
+                    } else if (castingType === 'centrifugal' && material === 'gray-iron') {
+                        recommendations = [
+                            {
+                                name: '离心铸造灰铸铁专用涂料',
+                                description: '采用高纯度石墨粉和铝矾土为主要原料，具有良好的涂挂性和抗粘砂性能',
+                                image: 'assets/images/products/gray-iron-coating.jpg'
+                            },
+                            {
+                                name: '石墨粉',
+                                description: '固定碳含量≥90%，用于离心铸造灰铸铁涂料的主要原料，提高涂料的润滑性和抗粘砂性能',
+                                image: 'assets/images/products/gray-iron-coating.jpg'
+                            },
+                            {
+                                name: '中铝矾土熟料',
+                                description: 'Al₂O₃含量60%-85%，提高涂料的高温稳定性',
+                                image: 'assets/images/products/medium-alumina熟料.jpg'
+                            }
+                        ];
+
+                        advantages = [
+                            '有效防止灰铸铁件粘砂缺陷',
+                            '提高铸件表面光洁度',
+                            '良好的高温稳定性，适用于离心铸造的高温环境',
+                            '易于清理，不影响铸件后续加工',
+                            '良好的涂挂性，确保涂层均匀',
+                            '稳定的质量，确保铸件一致性'
+                        ];
+                    } else if (castingType === 'centrifugal' && material === 'ductile-iron') {
+                        recommendations = [
+                            {
+                                name: '离心铸造球墨铸铁专用涂料',
+                                description: '采用特殊配方，具有良好的涂挂性和高温稳定性，有效防止球墨铸铁件粘砂',
+                                image: 'assets/images/products/gray-iron-coating.jpg'
+                            },
+                            {
+                                name: '高铝矾土熟料',
+                                description: 'Al₂O₃含量≥85%，耐火度≥1790℃，用于离心铸造球墨铸铁涂料的主要原料',
+                                image: 'assets/images/products/high-alumina熟料.jpg'
+                            },
+                            {
+                                name: '石墨粉',
+                                description: '固定碳含量≥90%，提高涂料的润滑性和抗粘砂性能',
+                                image: 'assets/images/products/gray-iron-coating.jpg'
+                            }
+                        ];
+
+                        advantages = [
+                            '有效防止球墨铸铁件粘砂缺陷',
+                            '提高铸件表面光洁度',
+                            '良好的高温稳定性，适用于离心铸造的高温环境',
+                            '易于清理，不影响铸件后续加工',
+                            '良好的涂挂性，确保涂层均匀',
+                            '稳定的质量，确保铸件一致性'
+                        ];
+                    } else if (castingType === 'centrifugal' && material === 'steel') {
+                        recommendations = [
+                            {
+                                name: '离心铸造铸钢专用涂料',
+                                description: '采用高纯度铝矾土和锆英粉为主要原料，具有优异的高温稳定性和抗粘砂性能',
+                                image: 'assets/images/products/lost-foam-steel-coating.jpg'
+                            },
+                            {
+                                name: '锆英粉',
+                                description: 'ZrO₂含量≥65%，用于离心铸造铸钢涂料的主要原料，提高涂料的高温稳定性',
+                                image: 'assets/images/products/investment-steel-coating.jpg'
+                            },
+                            {
+                                name: '高铝矾土熟料',
+                                description: 'Al₂O₃含量≥85%，提高涂料的高温稳定性',
+                                image: 'assets/images/products/high-alumina熟料.jpg'
+                            }
+                        ];
+
+                        advantages = [
+                            '有效防止铸钢件表面缺陷',
+                            '提高铸件表面光洁度，减少加工余量',
+                            '优异的高温稳定性，适用于1500℃以上的高温环境',
+                            '易于清理，不影响铸件后续加工',
+                            '优异的抗粘砂性能，减少铸件清理工作量',
+                            '稳定的质量，确保铸件一致性'
+                        ];
+                    } else if (castingType === 'centrifugal' && material === 'aluminum') {
+                        recommendations = [
+                            {
+                                name: '离心铸造铝合金专用涂料',
+                                description: '采用特殊配方，具有良好的涂挂性和高温稳定性，有效防止铝合金铸件粘砂',
+                                image: 'assets/images/products/aluminum-coating.jpg'
+                            },
+                            {
+                                name: '滑石粉',
+                                description: '用于铝合金铸造涂料的主要原料，提高涂料的润滑性和抗粘砂性能',
+                                image: 'assets/images/products/aluminum-coating.jpg'
+                            },
+                            {
+                                name: '膨润土',
+                                description: '提高涂料的悬浮性和涂挂性',
+                                image: 'assets/images/products/aluminum-coating.jpg'
+                            }
+                        ];
+
+                        advantages = [
+                            '有效防止铝合金铸件粘砂和氧化',
+                            '提高铸件表面光洁度',
+                            '良好的高温稳定性，适用于离心铸造的高温环境',
+                            '易于清理，不影响铸件后续加工',
+                            '良好的涂挂性，确保涂层均匀',
+                            '稳定的质量，确保铸件一致性'
+                        ];
+                    } else if (castingType === 'centrifugal' && material === 'copper') {
+                        recommendations = [
+                            {
+                                name: '离心铸造铜合金专用涂料',
+                                description: '采用特殊配方，具有良好的涂挂性和高温稳定性，有效防止铜合金铸件粘砂',
+                                image: 'assets/images/products/aluminum-coating.jpg'
+                            },
+                            {
+                                name: '石墨粉',
+                                description: '固定碳含量≥90%，提高涂料的润滑性和抗粘砂性能',
+                                image: 'assets/images/products/gray-iron-coating.jpg'
+                            },
+                            {
+                                name: '高铝矾土熟料',
+                                description: 'Al₂O₃含量≥85%，提高涂料的高温稳定性',
+                                image: 'assets/images/products/high-alumina熟料.jpg'
+                            }
+                        ];
+
+                        advantages = [
+                            '有效防止铜合金铸件粘砂',
+                            '提高铸件表面光洁度',
+                            '良好的高温稳定性，适用于离心铸造的高温环境',
+                            '易于清理，不影响铸件后续加工',
+                            '良好的涂挂性，确保涂层均匀',
+                            '稳定的质量，确保铸件一致性'
+                        ];
+                    } else if (material === 'aluminum') {
+                        recommendations = [
+                            {
+                                name: '铝合金铸造专用涂料',
+                                description: '采用特殊配方，具有良好的涂挂性和高温稳定性，有效防止铝合金铸件粘砂',
+                                image: 'assets/images/products/lost-foam-steel-coating.jpg'
+                            }
+                        ];
+
+                        advantages = [
+                            '有效防止铝合金铸件粘砂和氧化',
+                            '提高铸件表面光洁度',
+                            '良好的透气性，减少气孔缺陷',
+                            '易于清理，不影响铸件后续加工'
+                        ];
+                    } else {
+                        recommendations = [
+                            {
+                                name: '通用型铸造涂料',
+                                description: '适用于多种铸造工艺和材料，具有良好的涂挂性和高温稳定性',
+                                image: 'assets/images/products/lost-foam-steel-coating.jpg'
+                            },
+                            {
+                                name: '中铝矾土熟料',
+                                description: 'Al₂O₃含量60%-85%，适用于一般铸造工艺',
+                                image: 'assets/images/products/lost-foam-steel-coating.jpg'
+                            }
+                        ];
+
+                        advantages = [
+                            '适用范围广，可用于多种铸造工艺和材料',
+                            '良好的性价比',
+                            '易于使用和储存',
+                            '稳定的质量和性能'
+                        ];
+                    }
+
+                    // 添加特殊要求的定制建议
+                    if (requirements.includes('surface-quality')) {
+                        advantages.push('特别优化的配方，显著提高铸件表面质量和光洁度');
+                    }
+
+                    if (requirements.includes('batch-production') || requirements.includes('efficiency')) {
+                        advantages.push('优化的工艺参数，提高生产效率，适合大批量生产');
+                    }
+
+                    // 渲染推荐结果
+                    recommendationResult.innerHTML = '';
+                    recommendations.forEach(product => {
+                        const productHTML = `
+                            <div class="flex items-start p-4 bg-white rounded-lg shadow-sm">
+                                <img src="${product.image}" alt="${product.name}" class="w-20 h-20 object-cover rounded-md mr-4">
+                                <div>
+                                    <h5 class="font-bold text-lg mb-1">${product.name}</h5>
+                                    <p class="text-gray-600 text-sm">${product.description}</p>
+                                </div>
+                            </div>
+                        `;
+                        recommendationResult.innerHTML += productHTML;
+                    });
+
+                    // 渲染优势分析
+                    advantagesResult.innerHTML = '';
+                    advantages.forEach(advantage => {
+                        const advantageHTML = `
+                            <div class="flex items-start">
+                                <i class="fas fa-check-circle text-green-600 mt-1 mr-3"></i>
+                                <p>${advantage}</p>
+                            </div>
+                        `;
+                        advantagesResult.innerHTML += advantageHTML;
+                    });
+
+                    // 显示结果，隐藏初始提示
+                    resultContainer.classList.remove('hidden');
+                    initialPrompt.classList.add('hidden');
+
+                    // 恢复按钮状态
+                    analyzeBtn.innerHTML = '<i class="fas fa-brain mr-2"></i> AI智能分析';
+                    analyzeBtn.disabled = false;
+
+                    // 滚动到结果区域
+                    resultContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 2000);
+            });
+
+            // 产品分类标签切换功能
+            const categoryBtns = document.querySelectorAll('.category-btn');
+            const productCards = document.querySelectorAll('.product-card');
+
+            categoryBtns.forEach(btn => {
+                btn.addEventListener('click', function () {
+                    // 移除所有按钮的活跃状态
+                    categoryBtns.forEach(b => {
+                        b.classList.remove('bg-blue-800', 'text-white');
+                        b.classList.add('bg-white', 'text-gray-800');
+                    });
+
+                    // 添加当前按钮的活跃状态
+                    this.classList.remove('bg-white', 'text-gray-800');
+                    this.classList.add('bg-blue-800', 'text-white');
+
+                    const category = this.getAttribute('data-category');
+
+                    // 显示或隐藏产品卡片
+                    productCards.forEach(card => {
+                        if (category === 'all' || card.getAttribute('data-category') === category) {
+                            card.style.display = 'block';
+                            // 添加动画效果
+                            card.style.opacity = '0';
+                            card.style.transform = 'translateY(20px)';
+                            setTimeout(() => {
+                                card.style.transition = 'all 0.5s ease';
+                                card.style.opacity = '1';
+                                card.style.transform = 'translateY(0)';
+                            }, 50);
+                        } else {
+                            card.style.opacity = '0';
+                            card.style.transform = 'translateY(20px)';
+                            setTimeout(() => {
+                                card.style.display = 'none';
+                            }, 500);
+                        }
+                    });
+                });
+            });
+
+
+
+            // Three.js 背景动画
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+            const renderer = new THREE.WebGLRenderer({
+                canvas: document.getElementById('hero-canvas'),
+                alpha: true,
+                antialias: true
+            });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+
+            // 创建粒子
+            const particlesGeometry = new THREE.BufferGeometry();
+            const particlesCount = 1500;
+
+            const posArray = new Float32Array(particlesCount * 3);
+
+            for (let i = 0; i < particlesCount * 3; i++) {
+                posArray[i] = (Math.random() - 0.5) * 5;
+            }
+
+            particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+
+            const particlesMaterial = new THREE.PointsMaterial({
+                size: 0.005,
+                color: 0xffffff
+            });
+
+            const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
+            scene.add(particlesMesh);
+
+            camera.position.z = 2;
+
+            // 动画循环
+            const animate = () => {
+                requestAnimationFrame(animate);
+
+                particlesMesh.rotation.y += 0.001;
+
+                renderer.render(scene, camera);
+            };
+
+            animate();
+
+            // 窗口大小调整
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+
+            // 鼠标移动效果
+            document.addEventListener('mousemove', (event) => {
+                const mouseX = (event.clientX / window.innerWidth) * 2 - 1;
+                const mouseY = -(event.clientY / window.innerHeight) * 2 + 1;
+
+                gsap.to(particlesMesh.rotation, {
+                    x: mouseY * 0.1,
+                    y: mouseX * 0.1,
+                    duration: 2
+                });
+            });
+
+            // 图片懒加载
+            const lazyImages = document.querySelectorAll('.lazy');
+
+            const imageObserver = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const image = entry.target;
+                        image.src = image.dataset.src;
+                        image.classList.remove('lazy');
+                        imageObserver.unobserve(image);
+                    }
+                });
+            });
+
+            lazyImages.forEach(image => {
+                imageObserver.observe(image);
+            });
+
+            // ==================== 彩蛋：Konami代码铸造烟花 ====================
+            const konamiCode = ['ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'KeyA'];
+            let konamiIndex = 0;
+
+            document.addEventListener('keydown', (e) => {
+                if (e.code === konamiCode[konamiIndex]) {
+                    konamiIndex++;
+                    if (konamiIndex === konamiCode.length) {
+                        launchFoundryFireworks();
+                        konamiIndex = 0;
+                    }
+                } else {
+                    konamiIndex = 0;
+                }
+            });
+
+            function launchFoundryFireworks() {
+                // 创建烟花容器
+                const fireworksContainer = document.createElement('div');
+                fireworksContainer.id = 'fireworks-container';
+                fireworksContainer.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    pointer-events: none;
+                    z-index: 9998;
+                    background: rgba(0, 0, 0, 0.15);
+                `;
+                document.body.appendChild(fireworksContainer);
+
+                // 显示彩蛋提示
+                const easterEggText = document.createElement('div');
+                easterEggText.innerHTML = `
+                    <div style="text-align: center; padding: 30px; background: linear-gradient(135deg, #0B3C5D, #FF8C42); color: white; border-radius: 16px; margin: 20px; box-shadow: 0 15px 50px rgba(0,0,0,0.4);">
+                        <h2 style="margin: 0 0 10px 0; font-size: 32px;">🎉 ③🧔</h2>
+                        <p style="margin: 0; font-size: 20px;">KING_FENG 出品 😎✨</p>
+                    </div>
+                `;
+                easterEggText.style.cssText = `
+                    position: fixed;
+                    top: 80px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    z-index: 9999;
+                    animation: bounceIn 0.8s ease;
+                `;
+                document.body.appendChild(easterEggText);
+
+                // 添加动画样式
+                const style = document.createElement('style');
+                style.textContent = `
+                    @keyframes bounceIn {
+                        0% { transform: translateX(-50%) scale(0); opacity: 0; }
+                        50% { transform: translateX(-50%) scale(1.2); }
+                        70% { transform: translateX(-50%) scale(0.95); }
+                        100% { transform: translateX(-50%) scale(1); opacity: 1; }
+                    }
+                    @keyframes twinkle {
+                        0%, 100% { opacity: 0.3; }
+                        50% { opacity: 1; }
+                    }
+                `;
+                document.head.appendChild(style);
+
+                // 金属颜色数组（对应不同铸造材料）
+                const metalColors = [
+                    '#FFD700', // 金色
+                    '#C0C0C0', // 银色
+                    '#B87333', // 铜色
+                    '#71797E', // 铁色
+                    '#E6BE8A', // 铝色
+                    '#FF8C42', // 主题橙色
+                    '#0B3C5D', // 主题蓝色
+                    '#FF6B6B', // 红色
+                    '#4ECDC4', // 青色
+                    '#9B59B6', // 紫色
+                    '#F39C12', // 橙色
+                    '#2ECC71'  // 绿色
+                ];
+
+                // 创建背景闪烁星星（减少数量）
+                createTwinklingStars();
+
+                // 发射多个烟花波次（优化数量和密度）
+                const fireworkWaves = [
+                    { count: 8, delay: 0, particleMultiplier: 1 },
+                    { count: 12, delay: 1500, particleMultiplier: 1.2 },
+                    { count: 15, delay: 3500, particleMultiplier: 1.4 },
+                    { count: 12, delay: 5500, particleMultiplier: 1.2 }
+                ];
+
+                fireworkWaves.forEach(wave => {
+                    for (let i = 0; i < wave.count; i++) {
+                        setTimeout(() => {
+                            const x = Math.random() * window.innerWidth;
+                            const y = Math.random() * window.innerHeight * 0.5 + 50;
+                            const color = metalColors[Math.floor(Math.random() * metalColors.length)];
+                            createFirework(x, y, color, wave.particleMultiplier);
+                        }, wave.delay + i * 200);
+                    }
+                });
+
+                // 创建背景闪烁星星
+                function createTwinklingStars() {
+                    for (let i = 0; i < 50; i++) {
+                        const star = document.createElement('div');
+                        const size = Math.random() * 3 + 1;
+                        star.style.cssText = `
+                            position: absolute;
+                            left: ${Math.random() * window.innerWidth}px;
+                            top: ${Math.random() * window.innerHeight}px;
+                            width: ${size}px;
+                            height: ${size}px;
+                            background: white;
+                            border-radius: 50%;
+                            box-shadow: 0 0 6px white;
+                            animation: twinkle ${Math.random() * 2 + 1}s ease-in-out infinite;
+                            animation-delay: ${Math.random() * 2}s;
+                        `;
+                        fireworksContainer.appendChild(star);
+                    }
+                }
+
+                // 创建烟花粒子（优化性能）
+                function createFirework(x, y, color, particleMultiplier = 1) {
+                    const particleCount = Math.floor(50 * particleMultiplier);
+
+                    for (let i = 0; i < particleCount; i++) {
+                        const particle = document.createElement('div');
+                        const angle = (Math.PI * 2 * i) / particleCount;
+                        const velocity = Math.random() * 300 + 100;
+                        const vx = Math.cos(angle) * velocity;
+                        const vy = Math.sin(angle) * velocity;
+                        const particleSize = Math.random() * 8 + 4;
+
+                        particle.style.cssText = `
+                            position: absolute;
+                            left: ${x}px;
+                            top: ${y}px;
+                            width: ${particleSize}px;
+                            height: ${particleSize}px;
+                            background: ${color};
+                            border-radius: 50%;
+                            box-shadow: 0 0 ${Math.random() * 15 + 8}px ${color};
+                            pointer-events: none;
+                            will-change: transform, opacity;
+                        `;
+
+                        fireworksContainer.appendChild(particle);
+
+                        // 使用GSAP动画
+                        gsap.to(particle, {
+                            x: vx,
+                            y: vy + 200,
+                            opacity: 0,
+                            scale: 0,
+                            duration: Math.random() * 2 + 1.5,
+                            ease: 'power2.out',
+                            onComplete: () => particle.remove()
+                        });
+                    }
+
+                    // 添加第二次爆炸效果（减少粒子数）
+                    setTimeout(() => {
+                        for (let i = 0; i < 20; i++) {
+                            const particle = document.createElement('div');
+                            const angle = Math.random() * Math.PI * 2;
+                            const velocity = Math.random() * 100 + 30;
+                            const vx = Math.cos(angle) * velocity;
+                            const vy = Math.sin(angle) * velocity;
+
+                            particle.style.cssText = `
+                                position: absolute;
+                                left: ${x}px;
+                                top: ${y}px;
+                                width: ${Math.random() * 4 + 2}px;
+                                height: ${Math.random() * 4 + 2}px;
+                                background: white;
+                                border-radius: 50%;
+                                box-shadow: 0 0 8px white;
+                                pointer-events: none;
+                                will-change: transform, opacity;
+                            `;
+
+                            fireworksContainer.appendChild(particle);
+
+                            gsap.to(particle, {
+                                x: vx,
+                                y: vy + 100,
+                                opacity: 0,
+                                scale: 0,
+                                duration: Math.random() * 1 + 0.8,
+                                ease: 'power1.out',
+                                onComplete: () => particle.remove()
+                            });
+                        }
+                    }, 200);
+                }
+
+                // 12秒后清理
+                setTimeout(() => {
+                    if (fireworksContainer.parentNode) fireworksContainer.remove();
+                    if (easterEggText.parentNode) easterEggText.remove();
+                    if (style.parentNode) style.remove();
+                }, 12000);
+            }
+        });
+    </script>
+</body>
+
+</html>

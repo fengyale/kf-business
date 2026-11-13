@@ -1,0 +1,9 @@
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="200" height="200" fill="#f5f5f5"/>
+  <rect x="40" y="40" width="120" height="120" rx="10" fill="#d4a76a"/>
+  <rect x="50" y="50" width="100" height="100" rx="5" fill="#c6955a"/>
+  <rect x="60" y="60" width="80" height="80" rx="3" fill="#b8834a"/>
+  <text x="100" y="100" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="#333">中铝矾土熟料</text>
+  <text x="100" y="120" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#666">Al₂O₃含量: 60%-85%</text>
+  <text x="100" y="135" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#666">耐火度: ≥1700℃</text>
+</svg>
